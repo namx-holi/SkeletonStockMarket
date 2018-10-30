@@ -6,8 +6,10 @@ import random
 
 # TODO: Get these from json file
 stock_types = [
-	dict(stockID="BNS", name="Bones", Price=1.23),
-	dict(stockID="BBN", name="Baby Bones", Price=3.45)
+	dict(stockID="BNS", name="Bones", Price=100),
+	dict(stockID="BBN", name="Baby Bones", Price=350),
+	dict(stockID="BIG", name="Big Bones", Price=550),
+	dict(stockID="DBN", name="Dry Bones", Price=275)
 ]
 
 price_history_len = 100
@@ -68,7 +70,7 @@ def simulate_stocks(stocks):
 			x = [i for i in range(len(stock["PriceHistory"]))]
 			y = stock["PriceHistory"]
 			plt.plot(x, y)
-	
+
 	ani = animation.FuncAnimation(fig, animate, interval=1)
 	plt.show()
 
