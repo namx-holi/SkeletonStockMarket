@@ -1,10 +1,16 @@
 
 class Account:
-	def __init__(self, username, password):
-		self._username = username
-		self._password = hash(password) # TODO: Better this
-		self._funds = 0
-		self._owned_stocks = []
+	def __init__(self, username=None, password=None, account_dict=None):
+		if account_dict:
+			self._username = account_dict["username"]
+			self._password = account_dict["password"]
+			self._funds = account_dict["funds"]
+			self._owned_stocks = account_dict["owned_stocks"]
+		else:
+			self._username = username
+			self._password = hash(password) # TODO: Better this
+			self._funds = 0
+			self._owned_stocks = []
 
 
 	def buy_stocks(self, stock, quantity=1):
@@ -36,3 +42,14 @@ class Account:
 
 	def get_funds(self):
 		return self._funds
+
+
+	def to_dict(self):
+		account_dict = dict(
+			username=self._username,
+			password=self._password,
+			funds=self._funds,
+			owned_stocks=self._owned_stocks
+		)
+
+		return account_dict

@@ -2,6 +2,7 @@
 class server_settings:
 	bind_ip = "0.0.0.0"
 	bind_port = 9999
+	accounts_filepath = "data/accounts.json"
 
 
 class client_settings:

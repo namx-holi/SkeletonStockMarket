@@ -31,7 +31,6 @@ class Client:
 
 
 	def start(self):
-		input_line = ""
 		while True:
 			try:
 				input_line = input("> ").lower()
@@ -48,13 +47,16 @@ class Client:
 				command, args = input_line.split(" ", 1)
 			else:
 				command = input_line
-				args = None
+				args = ""
 			data = dict(command=command, args=args)
 
 			response = self._send(data)
 
 			if not response["error"]:
-				visualise_stocks(response["response"])
+				if command == "get":
+					visualise_stocks(response["response"])
+				else:
+					print(response["response"])
 			else:
 				print("ERROR: {}".format(response["error_text"]))
 
