@@ -9,6 +9,10 @@ def visualise_stocks(stocks):
 	for stock in stocks:
 		x = [i - cfg.price_history_len for i in range(cfg.price_history_len)]
 		y = stock["PriceHistory"]
-		plt.plot(x, y)
+		plt.plot(x, y, label=stock["stockID"])
 
+	plt.title("Stock price history")
+	plt.xlabel("Days from now")
+	plt.ylabel("Price")
+	plt.legend()
 	plt.show()
