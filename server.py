@@ -34,7 +34,7 @@ class Server:
 			return
 
 		for account in data:
-			self._accounts.append(accounts.Account(account))
+			self._accounts.append(accounts.Account(account_dict=account))
 
 
 	def save_accounts(self):
@@ -46,7 +46,7 @@ class Server:
 			data.append(account.to_dict())
 
 		with open(self._accounts_filepath, "w") as stream:
-			json.dump(data, stream, indent=4)
+			json.dump(data, stream, indent=4, sort_keys=True)
 
 
 	def _listen_func(self):
