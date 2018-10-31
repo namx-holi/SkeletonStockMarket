@@ -1,10 +1,21 @@
 import socket
+import json
+
+from settings import client_settings as cfg
+
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-client.connect(("0.0.0.0", 9999))
+send_text = input("> ")
+if len(send_text.split(" ", 1)) > 1:
+	command, args = send_text.split(" ", 1)
+else:
+	command = send_text
+	args = None
+data = dict(command=command, args=args)
 
-client.send("Hello, world!\n".encode())
+client.connect((cfg.bind_ip, cfg.bind_port))
+client.send(json.dumps(data).encode())
+response = client.recv(4096).decode()
 
-response = client.recv(4096)
-print(response)
+print(json.loads(response))
