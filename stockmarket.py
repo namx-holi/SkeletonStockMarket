@@ -66,7 +66,7 @@ class Stockmarket:
 			1 +
 			self._mean/255 +
 			r * self._stdev / np.sqrt(225))
-		return next_price
+		return next_price[0]
 
 
 	def _update_stocks(self):
@@ -111,8 +111,8 @@ class Stockmarket:
 			return_stocks = []
 			for stock in stocks:
 				if (
-					filterString in stock["stockID"] or
-					filterString in stock["name"]
+					filterString == stock["stockID"].lower() or
+					filterString in stock["name"].lower()
 				):
 					return_stocks.append(stock)
 		else:

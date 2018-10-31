@@ -1,6 +1,7 @@
 
 import socket
 import threading
+import json
 
 from settings import server_settings as server_cfg
 from settings import market_settings as market_cfg
@@ -13,6 +14,7 @@ class Server:
 		self._bind_ip = bind_ip
 		self._bind_port = bind_port
 		self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self._server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self._server.bind((bind_ip, bind_port))
 
 
@@ -38,18 +40,42 @@ class Server:
 
 
 	def _handle_func(self, client_socket):
-		request = client_socket.recv(1024)
+		request = client_socket.recv(1024).decode()
 		print("Received {} command".format(request))
 
-		# TODO: Handle things here!
-		client_socket.send("TODO: Handle {}".format(request).encode())
+		data = json.loads(request)
 
+		if data["command"].lower() == "get":
+			stocks = self._market.get_stocks(data["args"])
+
+			if len(stocks):
+				response = dict(
+					response=stocks,
+					error=False,
+					error_text=""
+				)
+			else:
+				response = dict(
+					response=[],
+					error=True,
+					error_text="No stocks by name '{}'".format(data["args"])
+				)
+
+		else:
+			response = dict(
+				response=None,
+				error=True,
+				error_text="No command for {}".format(data["command"])
+			)
+
+		client_socket.send(json.dumps(response).encode())
 		client_socket.close()
 
 
 	def start(self):
 		self._server.listen(5)
 		self._listen_func()
+		self._server.shutdown(socket.SHUT_RDWR)
 		self._server.close()
 
 
