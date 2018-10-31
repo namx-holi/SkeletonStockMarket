@@ -73,8 +73,11 @@ class Server:
 
 
 	def start(self):
+		self._market.start_update_thread()
 		self._server.listen(5)
 		self._listen_func()
+
+		self._market.stop_update_thread()
 		self._server.shutdown(socket.SHUT_RDWR)
 		self._server.close()
 
