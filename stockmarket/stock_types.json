@@ -1,0 +1,22 @@
+[
+	{
+		"stockID": "BNS",
+		"name": "Bones",
+		"startingPrice": 100
+	},
+	{
+		"stockID": "BBY",
+		"name": "Baby Bones",
+		"startingPrice": 350
+	},
+	{
+		"stockID": "BIG",
+		"name": "Big Bones",
+		"startingPrice": 550
+	},
+	{
+		"stockID": "DRY",
+		"name": "Dry Bones",
+		"startingPrice": 275
+	}
+]
