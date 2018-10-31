@@ -1,0 +1,5 @@
+# Ignore all the Sublime project files
+*.sublime-*
+
+# Ignore all compiled python
+*.pyc
