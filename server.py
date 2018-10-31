@@ -78,6 +78,9 @@ class Server:
 		elif data["command"].lower() == "createuser":
 			response = self._create_user(data)
 
+		elif data["command"].lower() == "login":
+			response = self._login(data)
+
 		else:
 			response = dict(
 				response=None,
@@ -128,7 +131,41 @@ class Server:
 			return dict(
 				response=None,
 				error=True,
-				error_text="Please use 'createuser USERNAME PASSWORD")
+				error_text="Please use 'createuser USERNAME PASSWORD'")
+
+
+	def _login(self, data):
+		if len(data["args"].split(" ", 1)) > 1:
+			username, password = data["args"].split(" ", 1)
+
+			# check if username exists
+			for account in self._accounts:
+				if account.get_username().lower() == username.lower():
+
+					# try log in
+					if account.check_password(hash(password)):
+						return dict(
+							response=dict(
+								msg="Logged in as {}".format(username),
+								authToken=1234),
+							error=False,
+							error_text="")
+
+					else:
+						return dict(
+							response=None,
+							error=True,
+							error_text="Incorrect password")
+
+			return dict(
+				response=None,
+				error=True,
+				error_text="Username does not exist")
+		else:
+			return dict(
+				response=None,
+				error=True,
+				error_text="Please use 'login USERNAME PASSWORD'")
 
 
 	def start(self):

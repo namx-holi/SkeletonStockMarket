@@ -44,6 +44,10 @@ class Account:
 		return self._username
 
 
+	def check_password(self, password_hash):
+		return self._password == password_hash
+
+
 	def get_funds(self):
 		return self._funds
 
