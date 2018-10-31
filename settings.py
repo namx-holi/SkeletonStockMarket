@@ -23,3 +23,6 @@ class market_settings:
 
 	# How many updates until mean/stdev change
 	update_period = 25
+
+	# Time between updates (in seconds)
+	update_delay = 1

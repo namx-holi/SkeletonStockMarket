@@ -2,6 +2,8 @@
 import numpy as np
 import random
 import json
+import threading
+import time
 
 from settings import market_settings as cfg
 
@@ -35,8 +37,13 @@ class Stockmarket:
 		self._update_period = cfg.update_period
 		self._time_elapsed = 0
 
+		self._update_delay = cfg.update_delay
+
 		# mutex
 		self._in_use = False
+
+		# thread
+		self._update_thread_running = False
 
 		# Update the stocks a few times 
 		for t in range(self._price_history_len):
@@ -99,8 +106,28 @@ class Stockmarket:
 		self._update_stocks()
 
 
-	# def start(self):
-		# while True:
+	def start_update_thread(self):
+		self._update_thread_running = True
+
+		def update_with_time():
+			print("Starting market updating")
+			while self._update_thread_running:
+				self.update()
+
+				# Split into multiple sleeps so stop time is faster
+				count = 0
+				while self._update_thread_running and count < self._update_delay:
+					time.sleep(1)
+					count += 1
+				
+			print("Stopping market updating")
+
+		thread = threading.Thread(target=update_with_time)
+		thread.start()
+
+
+	def stop_update_thread(self):
+		self._update_thread_running = False
 
 
 	def get_stocks(self, filterString=None):
