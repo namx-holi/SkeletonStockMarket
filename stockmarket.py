@@ -103,14 +103,24 @@ class Stockmarket:
 		# while True:
 
 
-	def get_stocks(self):
+	def get_stocks(self, filterString=None):
 		self._wait_on_mutex()
 
 		stocks = self._stocks
+		if filterString:
+			return_stocks = []
+			for stock in stocks:
+				if (
+					filterString in stock["stockID"] or
+					filterString in stock["name"]
+				):
+					return_stocks.append(stock)
+		else:
+			return_stocks = stocks
 
 		self._signal_mutex()
-		
-		return stocks
+
+		return return_stocks
 
 
 
