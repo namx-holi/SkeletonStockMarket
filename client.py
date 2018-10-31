@@ -34,7 +34,7 @@ class Client:
 		input_line = ""
 		while True:
 			try:
-				input_line = input(">").lower()
+				input_line = input("> ").lower()
 			except KeyboardInterrupt:
 				print()
 				break
