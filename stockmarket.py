@@ -3,7 +3,7 @@ import numpy as np
 import random
 import json
 
-import stock_settings as cfg
+from settings import market_settings as cfg
 
 # TODO: Method/class comments
 

@@ -1,14 +1,18 @@
+
 import socket
 import threading
 
-bind_ip = "0.0.0.0"
-bind_port = 9999
+from settings import server_settings as cfg
+
+# import stockmarket
+
+
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((bind_ip, bind_port))
+server.bind((cfg.bind_ip, cfg.bind_port))
 server.listen(5)
 
-print("Listening on {}:{}".format(bind_ip, bind_port))
+print("Listening on {}:{}".format(cfg.bind_ip, cfg.bind_port))
 
 
 def handle_client_connection(client_socket):
@@ -25,3 +29,15 @@ while True:
 		args=[client_sock]
 	)
 	client_handler.start()
+
+
+
+
+
+
+
+
+
+
+
+
