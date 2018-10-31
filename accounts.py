@@ -40,6 +40,10 @@ class Account:
 		self._funds += stock["Price"] * quantity
 
 
+	def get_username(self):
+		return self._username
+
+
 	def get_funds(self):
 		return self._funds
 

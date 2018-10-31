@@ -73,50 +73,62 @@ class Server:
 		data = json.loads(request)
 
 		if data["command"].lower() == "get":
-			stocks = self._market.get_stocks(data["args"])
-
-			if len(stocks):
-				response = dict(
-					response=stocks,
-					error=False,
-					error_text=""
-				)
-			else:
-				response = dict(
-					response=[],
-					error=True,
-					error_text="No stocks by name '{}'".format(data["args"])
-				)
+			response = self._get(data)
 
 		elif data["command"].lower() == "createuser":
-			if len(data["args"].split(" ", 1)) > 1:
-				username, password = data["args"].split(" ", 1)
-
-				new_account = accounts.Account(username, password)
-				self._accounts.append(new_account)
-
-				response = dict(
-					response="Account created",
-					error=False,
-					error_text=""
-				)
-
-			else:
-				response = dict(
-					response=None,
-					error=True,
-					error_text="Please use 'createuser USERNAME PASSWORD"
-				)
+			response = self._create_user(data)
 
 		else:
 			response = dict(
 				response=None,
 				error=True,
-				error_text="No command for {}".format(data["command"])
-			)
+				error_text="No command for {}".format(data["command"]))
 
 		client_socket.send(json.dumps(response).encode())
 		client_socket.close()
+
+
+	def _get(self, data):
+		stocks = self._market.get_stocks(data["args"])
+
+		if len(stocks):
+			return dict(
+				response=stocks,
+				error=False,
+				error_text="")
+		else:
+			return dict(
+				response=[],
+				error=True,
+				error_text="No stocks by name '{}'".format(data["args"]))
+
+
+	def _create_user(self, data):
+		if len(data["args"].split(" ", 1)) > 1:
+			username, password = data["args"].split(" ", 1)
+
+			# check if username already exists
+			for account in self._accounts:
+				if account.get_username().lower() == username.lower():
+					return dict(
+						response=None,
+						error=True,
+						error_text="Username already exists")
+
+
+			new_account = accounts.Account(username, password)
+			self._accounts.append(new_account)
+
+			return dict(
+				response="Account created",
+				error=False,
+				error_text="")
+
+		else:
+			return dict(
+				response=None,
+				error=True,
+				error_text="Please use 'createuser USERNAME PASSWORD")
 
 
 	def start(self):
