@@ -35,14 +35,29 @@ class Stockmarket:
 		self._update_period = cfg.update_period
 		self._time_elapsed = 0
 
+		# mutex
+		self._in_use = False
+
 		# Update the stocks a few times 
 		for t in range(self._price_history_len):
 			self.update()
 
 
+	def _wait_on_mutex(self):
+		while self._in_use:
+			pass
+		self._in_use = True
+	def _signal_mutex(self):
+		self._in_use = False
+
+
 	def _shuffle_params(self):
+		self._wait_on_mutex()
+
 		# TODO: Do something to stdev and mean
 		pass
+
+		self._signal_mutex()
 
 
 	def _calculate_next_price(self, price):
@@ -55,6 +70,8 @@ class Stockmarket:
 
 
 	def _update_stocks(self):
+		self._wait_on_mutex()
+
 		for stock in self._stocks:
 			if len(stock["PriceHistory"]) >= self._price_history_len:
 				del stock["PriceHistory"][0]
@@ -71,6 +88,8 @@ class Stockmarket:
 			stock["Price"] = next_price
 			stock["PriceHistory"].append(next_price)
 
+		self._signal_mutex()
+
 
 	def update(self):
 		self._time_elapsed += 1
@@ -80,8 +99,19 @@ class Stockmarket:
 		self._update_stocks()
 
 
+	# def start(self):
+		# while True:
+
+
 	def get_stocks(self):
-		return self._stocks
+		self._wait_on_mutex()
+
+		stocks = self._stocks
+
+		self._signal_mutex()
+		
+		return stocks
+
 
 
 if __name__ == "__main__":
