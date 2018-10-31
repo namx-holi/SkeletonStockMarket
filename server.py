@@ -2,35 +2,10 @@
 import socket
 import threading
 
-from settings import server_settings as cfg
+from settings import server_settings as server_cfg
+from settings import market_settings as market_cfg
 
-# import stockmarket
-
-
-
-# server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# server.bind((cfg.bind_ip, cfg.bind_port))
-# server.listen(5)
-
-# print("Listening on {}:{}".format(cfg.bind_ip, cfg.bind_port))
-
-
-# def handle_client_connection(client_socket):
-# 	request = client_socket.recv(1024)
-# 	print("Received {}".format(request))
-# 	client_socket.send("ACK!".encode())
-# 	client_socket.close()
-
-# while True:
-# 	client_sock, address = server.accept()
-# 	print("Accepted connection from {}:{}".format(address[0], address[1]))
-# 	client_handler = threading.Thread(
-# 		target=handle_client_connection,
-# 		args=[client_sock]
-# 	)
-# 	client_handler.start()
-
-
+import stockmarket
 
 
 class Server:
@@ -39,6 +14,10 @@ class Server:
 		self._bind_port = bind_port
 		self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self._server.bind((bind_ip, bind_port))
+
+
+	def bind_market(self, market):
+		self._market = market
 
 
 	def _listen_func(self):
@@ -73,6 +52,12 @@ class Server:
 		self._listen_func()
 		self._server.close()
 
+
+
 if __name__ == "__main__":
-	server = Server(cfg.bind_ip, cfg.bind_port)
+	market = stockmarket.Stockmarket(market_cfg.stock_types_filepath)
+	server = Server(server_cfg.bind_ip, server_cfg.bind_port)
+
+	server.bind_market(market)
+
 	server.start()
