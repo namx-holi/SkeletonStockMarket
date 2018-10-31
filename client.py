@@ -2,26 +2,7 @@ import socket
 import json
 
 from settings import client_settings as client_cfg
-
-
-# client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# send_text = input("> ")
-# if len(send_text.split(" ", 1)) > 1:
-# 	command, args = send_text.split(" ", 1)
-# else:
-# 	command = send_text
-# 	args = None
-# data = dict(command=command, args=args)
-
-# client.connect((cfg.bind_ip, cfg.bind_port))
-# client.send(json.dumps(data).encode())
-# response = client.recv(4096).decode()
-
-# print(json.loads(response))
-
-
-
+from visualisation.stocks import visualise_stocks
 
 
 class Client:
@@ -71,7 +52,11 @@ class Client:
 			data = dict(command=command, args=args)
 
 			response = self._send(data)
-			print(response)
+
+			if not response["error"]:
+				visualise_stocks(response["response"])
+			else:
+				print("ERROR: {}".format(response["error_text"]))
 
 
 if __name__ == "__main__":
