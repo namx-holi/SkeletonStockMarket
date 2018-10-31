@@ -1,3 +1,4 @@
+stock_types_filepath = "stock_types.json"
 
 # How many days history of each stock should we store
 price_history_len = 100
