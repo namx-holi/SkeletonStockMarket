@@ -1,21 +1,64 @@
 import socket
 import json
 
-from settings import client_settings as cfg
+from settings import client_settings as client_cfg
+from visualisation.stocks import visualise_stocks
 
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+class Client:
+	def __init__(self, bind_ip, bind_port):
+		self._bind_ip = bind_ip
+		self._bind_port = bind_port
 
-send_text = input("> ")
-if len(send_text.split(" ", 1)) > 1:
-	command, args = send_text.split(" ", 1)
-else:
-	command = send_text
-	args = None
-data = dict(command=command, args=args)
 
-client.connect((cfg.bind_ip, cfg.bind_port))
-client.send(json.dumps(data).encode())
-response = client.recv(4096).decode()
+	def _send(self, data):
+		self._client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self._client.connect((self._bind_ip, self._bind_port))
+		self._client.send(json.dumps(data).encode())
 
-print(json.loads(response))
+		# Read in parts until read all
+		BUFF_SIZE = 4096
+		data = b""
+		while True:
+			part = self._client.recv(BUFF_SIZE)
+			data += part
+			if len(part) < BUFF_SIZE:
+				break
+
+		self._client.close()
+
+		return json.loads(data.decode())
+
+
+	def start(self):
+		input_line = ""
+		while True:
+			try:
+				input_line = input(">").lower()
+			except KeyboardInterrupt:
+				print()
+				break
+
+			if input_line == "exit":
+				break
+			elif input_line == "":
+				continue
+
+			if len(input_line.split(" ", 1)) > 1:
+				command, args = input_line.split(" ", 1)
+			else:
+				command = input_line
+				args = None
+			data = dict(command=command, args=args)
+
+			response = self._send(data)
+
+			if not response["error"]:
+				visualise_stocks(response["response"])
+			else:
+				print("ERROR: {}".format(response["error_text"]))
+
+
+if __name__ == "__main__":
+	client = Client(client_cfg.bind_ip, client_cfg.bind_port)
+	client.start()
