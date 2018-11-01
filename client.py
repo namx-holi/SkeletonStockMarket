@@ -9,6 +9,7 @@ class Client:
 	def __init__(self, bind_ip, bind_port):
 		self._bind_ip = bind_ip
 		self._bind_port = bind_port
+		self._auth_token = None
 
 
 	def _send(self, data):
@@ -31,10 +32,9 @@ class Client:
 
 
 	def start(self):
-		input_line = ""
 		while True:
 			try:
-				input_line = input(">").lower()
+				input_line = input("> ").lower()
 			except KeyboardInterrupt:
 				print()
 				break
@@ -48,13 +48,23 @@ class Client:
 				command, args = input_line.split(" ", 1)
 			else:
 				command = input_line
-				args = None
-			data = dict(command=command, args=args)
+				args = ""
+
+			data = dict(command=command, args=args, auth_token=self._auth_token)
 
 			response = self._send(data)
 
 			if not response["error"]:
-				visualise_stocks(response["response"])
+				if command == "get":
+					visualise_stocks(response["response"])
+				elif command == "login":
+					self._auth_token = response["response"]["auth_token"]
+					print(response["response"]["msg"])
+				elif command == "logout":
+					self._auth_token = None
+					print(response["response"])
+				else:
+					print(response["response"])
 			else:
 				print("ERROR: {}".format(response["error_text"]))
 
