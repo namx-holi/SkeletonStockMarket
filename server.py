@@ -7,6 +7,7 @@ from settings import server_settings as server_cfg
 from settings import market_settings as market_cfg
 
 import stockmarket
+import accounts
 
 
 class Server:
@@ -16,10 +17,36 @@ class Server:
 		self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self._server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self._server.bind((bind_ip, bind_port))
+		self._accounts = []
 
 
 	def bind_market(self, market):
 		self._market = market
+
+
+	def load_accounts(self, accounts_filepath):
+		self._accounts_filepath = accounts_filepath
+
+		try:
+			with open(accounts_filepath, "r") as stream:
+				data = json.load(stream)
+		except FileNotFoundError:
+			return
+
+		for account in data:
+			self._accounts.append(accounts.Account(account_dict=account))
+
+
+	def save_accounts(self):
+		if not self._accounts_filepath:
+			return
+
+		data = []
+		for account in self._accounts:
+			data.append(account.to_dict())
+
+		with open(self._accounts_filepath, "w") as stream:
+			json.dump(data, stream, indent=4, sort_keys=True)
 
 
 	def _listen_func(self):
@@ -46,30 +73,138 @@ class Server:
 		data = json.loads(request)
 
 		if data["command"].lower() == "get":
-			stocks = self._market.get_stocks(data["args"])
-
-			if len(stocks):
-				response = dict(
-					response=stocks,
-					error=False,
-					error_text=""
-				)
+			if self._login_check(data):
+				response = self._get(data)
 			else:
 				response = dict(
-					response=[],
+					response=None,
 					error=True,
-					error_text="No stocks by name '{}'".format(data["args"])
-				)
+					error_text="You must be logged in to do this.")
+
+		elif data["command"].lower() == "logout":
+			if self._login_check(data):
+				response = self._logout(data)
+			else:
+				response = dict(
+					response=None,
+					error=True,
+					error_text="You are not logged in.")
+
+		elif data["command"].lower() == "createuser":
+			response = self._create_user(data)
+
+		elif data["command"].lower() == "login":
+			response = self._login(data)
 
 		else:
 			response = dict(
 				response=None,
 				error=True,
-				error_text="No command for {}".format(data["command"])
-			)
+				error_text="No command for {}".format(data["command"]))
 
 		client_socket.send(json.dumps(response).encode())
 		client_socket.close()
+
+
+	def _login_check(self, data):
+		if data["auth_token"]:
+			for account in self._accounts:
+				if account.check_auth_token(data["auth_token"]):
+					return True
+			return False
+		return False
+
+
+	def _get(self, data):
+		stocks = self._market.get_stocks(data["args"])
+
+		if len(stocks):
+			return dict(
+				response=stocks,
+				error=False,
+				error_text="")
+		else:
+			return dict(
+				response=[],
+				error=True,
+				error_text="No stocks by name '{}'".format(data["args"]))
+
+
+	def _create_user(self, data):
+		if len(data["args"].split(" ", 1)) > 1:
+			username, password = data["args"].split(" ", 1)
+
+			# check if username already exists
+			for account in self._accounts:
+				if account.get_username().lower() == username.lower():
+					return dict(
+						response=None,
+						error=True,
+						error_text="Username already exists")
+
+
+			new_account = accounts.Account(username, password)
+			self._accounts.append(new_account)
+
+			return dict(
+				response="Account created",
+				error=False,
+				error_text="")
+
+		else:
+			return dict(
+				response=None,
+				error=True,
+				error_text="Please use 'createuser USERNAME PASSWORD'")
+
+
+	def _login(self, data):
+		if len(data["args"].split(" ", 1)) > 1:
+			username, password = data["args"].split(" ", 1)
+
+			# check if username exists
+			for account in self._accounts:
+				if account.get_username().lower() == username.lower():
+
+					# try log in
+					if account.check_password(password):
+						auth_token = account.get_new_auth_token()
+						return dict(
+							response=dict(
+								msg="Logged in as {}".format(username),
+								auth_token=auth_token),
+							error=False,
+							error_text="")
+
+					else:
+						return dict(
+							response=None,
+							error=True,
+							error_text="Incorrect password")
+
+			return dict(
+				response=None,
+				error=True,
+				error_text="Username does not exist")
+		else:
+			return dict(
+				response=None,
+				error=True,
+				error_text="Please use 'login USERNAME PASSWORD'")
+
+
+	def _logout(self, data):
+		for account in self._accounts:
+			if account.check_auth_token(data["auth_token"]):
+				account.logout()
+				return dict(
+					response="You have been logged out.",
+					error=False,
+					error_text="")
+		return dict(
+			response="",
+			error=True,
+			error_text="You are not logged in.")
 
 
 	def start(self):
@@ -78,6 +213,7 @@ class Server:
 		self._listen_func()
 
 		self._market.stop_update_thread()
+		self.save_accounts()
 		self._server.shutdown(socket.SHUT_RDWR)
 		self._server.close()
 
@@ -87,6 +223,7 @@ if __name__ == "__main__":
 	market = stockmarket.Stockmarket(market_cfg.stock_types_filepath)
 	server = Server(server_cfg.bind_ip, server_cfg.bind_port)
 
+	server.load_accounts(server_cfg.accounts_filepath)
 	server.bind_market(market)
 
 	server.start()
