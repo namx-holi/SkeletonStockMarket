@@ -13,7 +13,7 @@ class Account:
 			self._username = username
 			self._password = hashlib.sha256(password.encode()).hexdigest()
 			self._funds = 10000
-			self._owned_stocks = []
+			self._owned_stocks = {}
 		self._logged_in = False
 		self._auth_token = None
 
