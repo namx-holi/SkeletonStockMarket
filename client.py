@@ -9,6 +9,7 @@ class Client:
 	def __init__(self, bind_ip, bind_port):
 		self._bind_ip = bind_ip
 		self._bind_port = bind_port
+		self._auth_token = None
 
 
 	def _send(self, data):
@@ -48,13 +49,18 @@ class Client:
 			else:
 				command = input_line
 				args = ""
-			data = dict(command=command, args=args)
+
+			data = dict(command=command, args=args, auth_token=self._auth_token)
+			print(data)
 
 			response = self._send(data)
 
 			if not response["error"]:
 				if command == "get":
 					visualise_stocks(response["response"])
+				elif command == "login":
+					self._auth_token = response["response"]["auth_token"]
+					print(response["response"]["msg"])
 				else:
 					print(response["response"])
 			else:

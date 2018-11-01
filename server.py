@@ -73,7 +73,13 @@ class Server:
 		data = json.loads(request)
 
 		if data["command"].lower() == "get":
-			response = self._get(data)
+			if self._login_check(data):
+				response = self._get(data)
+			else:
+				response = dict(
+					response=None,
+					error=True,
+					error_text="You must be logged in to do this.")
 
 		elif data["command"].lower() == "createuser":
 			response = self._create_user(data)
@@ -89,6 +95,17 @@ class Server:
 
 		client_socket.send(json.dumps(response).encode())
 		client_socket.close()
+
+
+	def _login_check(self, data):
+		if data["auth_token"]:
+			for account in self._accounts:
+				print(data["auth_token"])
+				print(account._auth_token)
+				if account.check_auth_token(data["auth_token"]):
+					return True
+			return False
+		return False
 
 
 	def _get(self, data):
@@ -143,11 +160,12 @@ class Server:
 				if account.get_username().lower() == username.lower():
 
 					# try log in
-					if account.check_password(hash(password)):
+					if account.check_password(password):
+						auth_token = account.get_new_auth_token()
 						return dict(
 							response=dict(
 								msg="Logged in as {}".format(username),
-								authToken=1234),
+								auth_token=auth_token),
 							error=False,
 							error_text="")
 

@@ -1,4 +1,7 @@
 
+import hashlib
+import uuid
+
 class Account:
 	def __init__(self, username=None, password=None, account_dict=None):
 		if account_dict:
@@ -8,9 +11,11 @@ class Account:
 			self._owned_stocks = account_dict["owned_stocks"]
 		else:
 			self._username = username
-			self._password = hash(password) # TODO: Better this
+			self._password = hashlib.sha256(password.encode()).hexdigest()
 			self._funds = 0
 			self._owned_stocks = []
+		self._logged_in = False
+		self._auth_token = None
 
 
 	def buy_stocks(self, stock, quantity=1):
@@ -44,7 +49,8 @@ class Account:
 		return self._username
 
 
-	def check_password(self, password_hash):
+	def check_password(self, password):
+		password_hash = hashlib.sha256(password.encode()).hexdigest()
 		return self._password == password_hash
 
 
@@ -61,3 +67,19 @@ class Account:
 		)
 
 		return account_dict
+
+
+	# TODO: Combine this with check_password to create login function
+	def get_new_auth_token(self):
+		auth_token = uuid.uuid4().hex
+		self._auth_token = auth_token
+		self._logged_in = True
+		return auth_token
+
+
+	def check_auth_token(self, auth_token):
+		return self._auth_token == auth_token
+
+
+	def is_logged_in(self):
+		return self._logged_in
