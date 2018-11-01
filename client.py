@@ -51,7 +51,6 @@ class Client:
 				args = ""
 
 			data = dict(command=command, args=args, auth_token=self._auth_token)
-			print(data)
 
 			response = self._send(data)
 
@@ -61,6 +60,9 @@ class Client:
 				elif command == "login":
 					self._auth_token = response["response"]["auth_token"]
 					print(response["response"]["msg"])
+				elif command == "logout":
+					self._auth_token = None
+					print(response["response"])
 				else:
 					print(response["response"])
 			else:

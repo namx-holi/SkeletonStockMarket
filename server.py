@@ -81,6 +81,15 @@ class Server:
 					error=True,
 					error_text="You must be logged in to do this.")
 
+		elif data["command"].lower() == "logout":
+			if self._login_check(data):
+				response = self._logout(data)
+			else:
+				response = dict(
+					response=None,
+					error=True,
+					error_text="You are not logged in.")
+
 		elif data["command"].lower() == "createuser":
 			response = self._create_user(data)
 
@@ -100,8 +109,6 @@ class Server:
 	def _login_check(self, data):
 		if data["auth_token"]:
 			for account in self._accounts:
-				print(data["auth_token"])
-				print(account._auth_token)
 				if account.check_auth_token(data["auth_token"]):
 					return True
 			return False
@@ -184,6 +191,20 @@ class Server:
 				response=None,
 				error=True,
 				error_text="Please use 'login USERNAME PASSWORD'")
+
+
+	def _logout(self, data):
+		for account in self._accounts:
+			if account.check_auth_token(data["auth_token"]):
+				account.logout()
+				return dict(
+					response="You have been logged out.",
+					error=False,
+					error_text="")
+		return dict(
+			response="",
+			error=True,
+			error_text="You are not logged in.")
 
 
 	def start(self):

@@ -78,8 +78,15 @@ class Account:
 
 
 	def check_auth_token(self, auth_token):
+		if not self._auth_token:
+			return False
 		return self._auth_token == auth_token
 
 
 	def is_logged_in(self):
 		return self._logged_in
+
+
+	def logout(self):
+		self._logged_in = False
+		self._auth_token = None
