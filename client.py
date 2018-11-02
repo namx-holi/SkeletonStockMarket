@@ -5,6 +5,8 @@ import time
 from settings import client_settings as client_cfg
 from visualisation.stocks import visualise_stocks
 
+from gui import show
+
 
 class Client:
 	def __init__(self, bind_ip, bind_port):
@@ -70,7 +72,8 @@ class Client:
 
 			if not response["error"]:
 				if command == "get":
-					visualise_stocks(response["data"])
+					# visualise_stocks(response["data"])
+					show(response["data"])
 				elif command == "login":
 					self._auth_token = response["data"]
 					print(response["msg"])
