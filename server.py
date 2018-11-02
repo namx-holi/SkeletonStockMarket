@@ -90,6 +90,15 @@ class Server:
 					error=True,
 					error_text="You must be logged in to do this.")
 
+		elif data["command"].lower() == "sell":
+			if self._login_check(data):
+				response = self._sell(data)
+			else:
+				response = dict(
+					response=None,
+					error=True,
+					error_text="You must be logged in to do this.")
+
 		elif data["command"].lower() == "logout":
 			if self._login_check(data):
 				response = self._logout(data)
@@ -122,6 +131,53 @@ class Server:
 					return True
 			return False
 		return False
+
+	def _sell(self, data):
+		if len(data["args"].split(" ", 1)) == 1:
+			stock_id = data["args"]
+			quantity = 1
+		else:
+			stock_id, quantity_str = data["args"].split(" ", 1)
+			try:
+				quantity = int(quantity_str)
+			except:
+				return dict(
+					response=None,
+					error=True,
+					error_text="Please use 'sell STOCK_ID [QUANTITY]'")
+
+		result_stocks = self._market.get_stocks(stock_id)
+		if len(result_stocks) > 1:
+			return dict(
+				response=None,
+				error=True,
+				error_text="Ambiguous stock name")
+		elif len(result_stocks) == 0:
+			return dict(
+				response=None,
+				error=True,
+				error_text="No stock found by name '{}'".format(stock_id.upper()))
+
+		for account in self._accounts:
+			if account.check_auth_token(data["auth_token"]):
+				did_sell = account.sell_stocks(result_stocks[0], quantity)
+
+				if did_sell:
+					return dict(
+						response="Sold {} of {}".format(quantity, stock_id.upper()),
+						error=False,
+						error_text="")
+				else:
+					return dict(
+						response=None,
+						error=True,
+						error_text="Not enough stocks of {} to sell {}".format(
+							stock_id.upper(), quantity))
+		return dict(
+			response=None,
+			error=True,
+			error_text="Account not found.")
+
 
 	def _buy(self, data):
 		if len(data["args"].split(" ", 1)) == 1:

@@ -33,6 +33,9 @@ class Account:
 
 
 	def sell_stocks(self, stock, quantity=1):
+		print(self._owned_stocks)
+		print(stock["stockID"])
+
 		if stock["stockID"] not in self._owned_stocks.keys():
 			return False
 		if self._owned_stocks[stock["stockID"]] < quantity:
@@ -43,6 +46,8 @@ class Account:
 			del self._owned_stocks[stock["stockID"]]
 
 		self._funds += stock["Price"] * quantity
+
+		return True
 
 
 	def get_username(self):
