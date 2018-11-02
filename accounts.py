@@ -12,8 +12,8 @@ class Account:
 		else:
 			self._username = username
 			self._password = hashlib.sha256(password.encode()).hexdigest()
-			self._funds = 0
-			self._owned_stocks = []
+			self._funds = 10000
+			self._owned_stocks = {}
 		self._logged_in = False
 		self._auth_token = None
 
@@ -33,6 +33,9 @@ class Account:
 
 
 	def sell_stocks(self, stock, quantity=1):
+		print(self._owned_stocks)
+		print(stock["stockID"])
+
 		if stock["stockID"] not in self._owned_stocks.keys():
 			return False
 		if self._owned_stocks[stock["stockID"]] < quantity:
@@ -43,6 +46,12 @@ class Account:
 			del self._owned_stocks[stock["stockID"]]
 
 		self._funds += stock["Price"] * quantity
+
+		return True
+
+
+	def get_owned_stocks(self):
+		return self._owned_stocks
 
 
 	def get_username(self):
