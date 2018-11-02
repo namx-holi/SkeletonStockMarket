@@ -60,6 +60,8 @@ class requestHandler:
 			return self.buy_stocks(data)
 		elif command == "sell":
 			return self.sell_stocks(data)
+		elif command == "assets":
+			return self.view_assets(data)
 
 		else:
 			return self._err("No command for {}".format(command))
@@ -195,3 +197,22 @@ class requestHandler:
 		else:
 			return self._err("Not enough of stock {} to sell {}".format(
 				stock_id.upper(), quantity))
+
+
+	def view_assets(self, data):
+		current_user = self.get_user(data)
+		if not current_user:
+			return self._err("You must be logged in to view assets")
+
+		return_text_lines = ["Asset Summary:"]
+		return_text_lines.append("  Funds: {}".format(current_user.get_funds()))
+		return_text_lines.append("")
+		return_text_lines.append("  Stocks:")
+
+		owned_stocks = current_user.get_owned_stocks()
+		for stock_id in owned_stocks.keys():
+			return_text_lines.append("    {} x{}".format(
+				stock_id, owned_stocks[stock_id]))
+
+		summary = "\n".join(return_text_lines)
+		return self._msg(summary)

@@ -50,6 +50,10 @@ class Account:
 		return True
 
 
+	def get_owned_stocks(self):
+		return self._owned_stocks
+
+
 	def get_username(self):
 		return self._username
 
