@@ -88,9 +88,10 @@ class requestHandler:
 	def create_user(self, data):
 		if len(data["args"].split(" ", 1)) != 2:
 			return self._err("Please use 'createuser USERNAME PASSWORD'")
+		username, password = data["args"].split(" ", 1)
 
-		if self.get_user_by_username:
-			return self._err("User alread exists")
+		if self.get_user_by_username(username):
+			return self._err("User already exists")
 
 		new_account = accounts.Account(username, password)
 		self._accounts.append(new_account)
