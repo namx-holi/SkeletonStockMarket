@@ -105,3 +105,33 @@ class requestHandler:
 			return self._msg("", data=stocks)
 		else:
 			return self._err("No stocks by name '{}'".format(data["args"].upper()))
+
+
+	def buy_stocks(self, data):
+		current_user = self.get_user(data)
+		if not current_user:
+			return self._err("You must be logged in to buy stocks")
+
+		if len(data["args"].split(" ", 1)) == 1:
+			stock_id = data["args"]
+			quantity = 1
+		else:
+			stock_id, quantity_str = data["args"].split(" ", 1)
+			try:
+				quantity = int(quantity_str)
+			except ValueError:
+				return self._err("Please use 'buy STOCK_ID [QUANTITY]'")
+
+
+		stocks = self._market.get_stocks(stock_id)
+		if len(stocks) == 0:
+			return self._err("No stock by name '{}'".format(data["args"].upper()))
+		elif len(stocks) > 1:
+			return self._err("Ambiguous stock name")
+
+		did_buy = current_user.buy_stocks(stocks[0], quantity)
+		if did_buy:
+			return self._msg("Bought {} of {}".format(quantity, stock_id.upper()))
+		else:
+			return self._err("Not enough funds to buy {} of {}".format(
+				quantity, stock_id.upper()))
