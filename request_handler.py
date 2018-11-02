@@ -41,6 +41,13 @@ class requestHandler:
 		return None
 
 
+	def get_user_by_username(self, username):
+		for account in self._accounts:
+			if account.get_username().lower() == username.lower():
+				return account
+		return None
+
+
 	def login(self, data):
 		current_user = self.get_user(data)
 		if current_user:
@@ -50,16 +57,16 @@ class requestHandler:
 			return self._err("Please use 'login USERNAME PASSWORD'")
 
 		username, password = data["args"].split(" ", 1)
+		account = self.get_user_by_username(username)
 
-		for account in self._accounts:
-			if account.get_username().lower() == username.lower():
+		if not account:
+			return self._err("Username does not exist")
+
 				if account.check_password(password):
 					auth_token = account.get_new_auth_token()
 					return self._msg("Logged in as {}".format(username), auth_token)
-				else:
-					return self._err("Incorrect password")
-
-		return self._err("Username does not exist")
+		else:
+			return self._err("Incorrect password")
 
 
 	def logout(self, data):
