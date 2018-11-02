@@ -1,4 +1,7 @@
 
+import accounts
+
+
 class requestHandler:
 	
 	def __init__(self, accounts, market):
@@ -48,6 +51,19 @@ class requestHandler:
 		return None
 
 
+	def create_user(self, data):
+		if len(data["args"].split(" ", 1)) != 2:
+			return self._err("Please use 'createuser USERNAME PASSWORD'")
+
+		if self.get_user_by_username:
+			return self._err("User alread exists")
+
+		new_account = accounts.Account(username, password)
+		self._accounts.append(new_account)
+
+		return self._msg("Account created")
+
+
 	def login(self, data):
 		current_user = self.get_user(data)
 		if current_user:
@@ -62,9 +78,9 @@ class requestHandler:
 		if not account:
 			return self._err("Username does not exist")
 
-				if account.check_password(password):
-					auth_token = account.get_new_auth_token()
-					return self._msg("Logged in as {}".format(username), auth_token)
+		if account.check_password(password):
+			auth_token = account.get_new_auth_token()
+			return self._msg("Logged in as {}".format(username), auth_token)
 		else:
 			return self._err("Incorrect password")
 
