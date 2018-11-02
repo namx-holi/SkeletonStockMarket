@@ -72,10 +72,23 @@ class Server:
 
 
 	def _handle_request(self, client_socket):
-		request = client_socket.recv(1024).decode()
-		print("Received {} command".format(request))
+		BUFF_SIZE = 1024
+		request_bytes = b""
+		while True:
+			part = client_socket.recv(BUFF_SIZE)
+			request_bytes += part
+			if len(part) < BUFF_SIZE:
+				break
+		request = request_bytes.decode()
 
-		data = json.loads(request)
+		try:
+			data = json.loads(request)
+		except:
+			client_socket.send("SKELETON STOCKMARKET!".encode())
+			client_socket.close()
+			return
+
+		print("Received {} command".format(request))
 
 		response = self._handler.handle_data(data)
 
