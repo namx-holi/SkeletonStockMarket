@@ -1,5 +1,6 @@
 import socket
 import json
+import time
 
 from settings import client_settings as client_cfg
 from visualisation.stocks import visualise_stocks
@@ -20,15 +21,28 @@ class Client:
 		# Read in parts until read all
 		BUFF_SIZE = 4096
 		data = b""
+		recv_no_bytes_count = 0
 		while True:
 			part = self._client.recv(BUFF_SIZE)
 			data += part
 			if len(part) < BUFF_SIZE:
-				break
+				# If we didn't recieve anything, try again as long
+				# as we havent already tried 3 times in a row
+				if recv_no_bytes_count >= 3:
+					time.sleep(0.025)
+					recv_no_bytes_count += 1
+				else:
+					break
+			else:
+				recv_no_bytes_count = 0
 
 		self._client.close()
+		try:
+			response = json.loads(data.decode())
+		except json.decoder.JSONDecodeError:
+			response = dict(error=True, error_text="RECV_ERROR: Please try again.")
 
-		return json.loads(data.decode())
+		return response
 
 
 	def start(self):
