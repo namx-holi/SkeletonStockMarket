@@ -1,8 +1,17 @@
 
 class requestHandler:
 	
-	def __init__(self, accounts):
+	def __init__(self, accounts, market):
 		self._accounts = accounts
+		self._market = market
+
+
+	def get_accounts:
+		return self._accounts
+
+
+	def get_market:
+		return self._market
 
 
 	def _err(self, error_text):
@@ -33,8 +42,6 @@ class requestHandler:
 
 
 	def login(self, data):
-
-		# Log out user trying to sign in if they are logged in already
 		current_user = self.get_user(data)
 		if current_user:
 			current_user.logout()
@@ -62,3 +69,16 @@ class requestHandler:
 			return self._msg("You have been logged out")
 		else:
 			return self._err("You are not logged in")
+
+
+	def get_stocks(self, data):
+		current_user = self.get_user(data)
+		if not current_user:
+			return self._err("You must be logged in to view stocks")
+
+		stocks = self._market.get_stocks(data["args"])
+
+		if len(stocks):
+			return self._msg("", data=stocks)
+		else:
+			return self._err("No stocks by name '{}'".format(data["args"].upper()))

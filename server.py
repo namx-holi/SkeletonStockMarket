@@ -132,6 +132,7 @@ class Server:
 			return False
 		return False
 
+
 	def _sell(self, data):
 		if len(data["args"].split(" ", 1)) == 1:
 			stock_id = data["args"]
