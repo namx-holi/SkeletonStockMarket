@@ -28,7 +28,7 @@ class Client:
 			if len(part) < BUFF_SIZE:
 				# If we didn't recieve anything, try again as long
 				# as we havent already tried 3 times in a row
-				if recv_no_bytes_count >= 3:
+				if recv_no_bytes_count < 3:
 					time.sleep(0.025)
 					recv_no_bytes_count += 1
 				else:
