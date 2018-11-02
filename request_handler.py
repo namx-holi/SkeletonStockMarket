@@ -55,4 +55,10 @@ class requestHandler:
 		return self._err("Username does not exist")
 
 
-	
+	def logout(self, data):
+		current_user = self.get_user(data)
+		if current_user:
+			current_user.logout()
+			return self._msg("You have been logged out")
+		else:
+			return self._err("You are not logged in")
