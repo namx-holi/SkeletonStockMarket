@@ -7,7 +7,9 @@ from settings import server_settings as server_cfg
 from settings import market_settings as market_cfg
 
 import stockmarket
-import accounts
+
+from accounts import Account
+from request_handler import requestHandler
 
 
 class Server:
@@ -17,11 +19,11 @@ class Server:
 		self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self._server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self._server.bind((bind_ip, bind_port))
-		self._accounts = []
+		self._handler = requestHandler()
 
 
 	def bind_market(self, market):
-		self._market = market
+		self._handler.bind_market(market)
 
 
 	def load_accounts(self, accounts_filepath):
@@ -33,8 +35,10 @@ class Server:
 		except FileNotFoundError:
 			return
 
+		account_list = []
 		for account in data:
-			self._accounts.append(accounts.Account(account_dict=account))
+			account_list.append(Account(account_dict=account))
+		self._handler.bind_accounts(account_list)
 
 
 	def save_accounts(self):
@@ -42,7 +46,8 @@ class Server:
 			return
 
 		data = []
-		for account in self._accounts:
+		account_list = self._handler.get_accounts()
+		for account in account_list:
 			data.append(account.to_dict())
 
 		with open(self._accounts_filepath, "w") as stream:
@@ -60,65 +65,19 @@ class Server:
 
 			print("Accepted connection from {}:{}".format(address[0], address[1]))
 			client_handler = threading.Thread(
-				target=self._handle_func,
+				target=self._handle_request,
 				args=[client_sock]
 			)
 			client_handler.start()
 
 
-	def _handle_func(self, client_socket):
+	def _handle_request(self, client_socket):
 		request = client_socket.recv(1024).decode()
 		print("Received {} command".format(request))
 
 		data = json.loads(request)
 
-		if data["command"].lower() == "get":
-			if self._login_check(data):
-				response = self._get(data)
-			else:
-				response = dict(
-					response=None,
-					error=True,
-					error_text="You must be logged in to do this.")
-
-		elif data["command"].lower() == "buy":
-			if self._login_check(data):
-				response = self._buy(data)
-			else:
-				response = dict(
-					response=None,
-					error=True,
-					error_text="You must be logged in to do this.")
-
-		elif data["command"].lower() == "sell":
-			if self._login_check(data):
-				response = self._sell(data)
-			else:
-				response = dict(
-					response=None,
-					error=True,
-					error_text="You must be logged in to do this.")
-
-		elif data["command"].lower() == "logout":
-			if self._login_check(data):
-				response = self._logout(data)
-			else:
-				response = dict(
-					response=None,
-					error=True,
-					error_text="You are not logged in.")
-
-		elif data["command"].lower() == "createuser":
-			response = self._create_user(data)
-
-		elif data["command"].lower() == "login":
-			response = self._login(data)
-
-		else:
-			response = dict(
-				response=None,
-				error=True,
-				error_text="No command for {}".format(data["command"]))
+		response = self._handler.handle_data(data)
 
 		client_socket.send(json.dumps(response).encode())
 		client_socket.close()
@@ -131,6 +90,7 @@ class Server:
 					return True
 			return False
 		return False
+
 
 	def _sell(self, data):
 		if len(data["args"].split(" ", 1)) == 1:
@@ -255,7 +215,7 @@ class Server:
 						error_text="Username already exists")
 
 
-			new_account = accounts.Account(username, password)
+			new_account = Account(username, password)
 			self._accounts.append(new_account)
 
 			return dict(
@@ -320,11 +280,11 @@ class Server:
 
 
 	def start(self):
-		self._market.start_update_thread()
+		self._handler.get_market().start_update_thread()
 		self._server.listen(5)
 		self._listen_func()
 
-		self._market.stop_update_thread()
+		self._handler.get_market().stop_update_thread()
 		self.save_accounts()
 		self._server.shutdown(socket.SHUT_RDWR)
 		self._server.close()
