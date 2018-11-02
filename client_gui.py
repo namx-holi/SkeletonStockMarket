@@ -21,23 +21,24 @@ class MainApp:
 		self.frame = tk.Frame(self.master)
 		self.auth_token = None
 
-
-		self.login_btn = tk.Button(
-			self.frame, text="Login", width=25,
-			command = self.login)
-		self.login_btn.pack()
+		self.login_logout_btn = tk.Button(
+			self.frame, text="Login",
+			width=25, command=self.login)
+		self.login_logout_btn.pack()
 
 		self.frame.pack()
 
 
 	def _send(self, data):
-		data.update(dict(auth_token=self.auth_token))
+		sending_data = dict(
+			command="", args="", auth_token=self.auth_token)
+		sending_data.update(data)
 
 		client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		client.connect((client_cfg.bind_ip, client_cfg.bind_port))
 
 		# TODO: Try Except around this
-		sending_data = json.dumps(data)
+		sending_data = json.dumps(sending_data)
 
 		client.send(sending_data.encode())
 
@@ -68,10 +69,33 @@ class MainApp:
 		data = dict(command="login", args="bob cool")
 		response = self._send(data)
 
-		if not response["error"]:
-			self._auth_token = response["data"]
-			print(response["msg"])
+		if response["error"]:
+			print(response["error_text"])
+			return
 
+		self.auth_token = response["data"]
+		print(response["msg"])
+
+		# Change the login button to a logout button
+		self.login_logout_btn.configure(text="Logout",
+			command=self.logout)
+
+
+	def logout(self):
+		data = dict(command="logout")
+		response = self._send(data)
+
+		if response["error"]:
+			print(response["error_text"])
+			return
+
+		self.auth_token = None
+		print(response["msg"])
+
+		# Change the logout button to a login button
+		self.login_logout_btn.configure(text="Login",
+			command=self.login)
+		
 
 
 if __name__ == "__main__":
