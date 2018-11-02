@@ -5,7 +5,7 @@ import accounts
 class requestHandler:
 	
 	def __init__(self, accounts=None, market=None):
-		self._accounts = accounts if accounts else None
+		self._accounts = accounts if accounts else []
 		self._market = market if accounts else None
 
 
