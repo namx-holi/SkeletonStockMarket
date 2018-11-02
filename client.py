@@ -56,15 +56,15 @@ class Client:
 
 			if not response["error"]:
 				if command == "get":
-					visualise_stocks(response["response"])
+					visualise_stocks(response["data"])
 				elif command == "login":
-					self._auth_token = response["response"]["auth_token"]
-					print(response["response"]["msg"])
+					self._auth_token = response["data"]
+					print(response["msg"])
 				elif command == "logout":
 					self._auth_token = None
-					print(response["response"])
+					print(response["msg"])
 				else:
-					print(response["response"])
+					print(response["msg"])
 			else:
 				print("ERROR: {}".format(response["error_text"]))
 

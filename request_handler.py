@@ -4,16 +4,24 @@ import accounts
 
 class requestHandler:
 	
-	def __init__(self, accounts, market):
+	def __init__(self, accounts=None, market=None):
+		self._accounts = accounts if accounts else None
+		self._market = market if accounts else None
+
+
+	def bind_accounts(self, accounts):
 		self._accounts = accounts
+
+
+	def bind_market(self, market):
 		self._market = market
 
 
-	def get_accounts:
+	def get_accounts(self):
 		return self._accounts
 
 
-	def get_market:
+	def get_market(self):
 		return self._market
 
 
@@ -31,6 +39,30 @@ class requestHandler:
 			data=data,
 			error=False,
 			error_text=None)
+
+
+	def handle_data(self, data):
+		if "command" not in data.keys():
+			return self._err("Missing command in request")
+		elif "args" not in data.keys():
+			return self._err("Missing args in request")
+
+		command = data["command"].lower()
+		if command == "createuser":
+			return self.create_user(data)
+		elif command == "login":
+			return self.login(data)
+		elif command == "logout":
+			return self.logout(data)
+		elif command == "get":
+			return self.get_stocks(data)
+		elif command == "buy":
+			return self.buy_stocks(data)
+		elif command == "sell":
+			return self.sell_stocks(data)
+
+		else:
+			return self._err("No command for {}".format(command))
 
 
 	def get_user(self, data):
@@ -157,9 +189,9 @@ class requestHandler:
 		elif len(stocks) > 1:
 			return self._err("Ambiguous stock name")
 
-		did_sell = current_user.sell_stocks(stock[0], quantity)
+		did_sell = current_user.sell_stocks(stocks[0], quantity)
 		if did_sell:
-			return self._msg("Bought {} of {}".format(quantity, stock_id.upper()))
+			return self._msg("Sold {} of {}".format(quantity, stock_id.upper()))
 		else:
 			return self._err("Not enough of stock {} to sell {}".format(
 				stock_id.upper(), quantity))
