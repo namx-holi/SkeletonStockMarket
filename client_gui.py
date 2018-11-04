@@ -14,8 +14,14 @@ import tkinter as tk
 from settings import market_settings as market_cfg
 from settings import client_settings as client_cfg
 
+class Fonts:
+	large = ("Helvetica 20 bold")
+	medium = ("Helvetica 15 bold")
+
+
 
 class MainApp:
+
 	def __init__(self, master):
 		self.master = master
 		self.frame = tk.Frame(self.master)
@@ -66,6 +72,9 @@ class MainApp:
 
 
 	def login(self):
+		login_popup = LoginDialog(self.master)
+		self.master.wait_window(login_popup)
+
 		data = dict(command="login", args="bob cool")
 		response = self._send(data)
 
@@ -95,10 +104,47 @@ class MainApp:
 		# Change the logout button to a login button
 		self.login_logout_btn.configure(text="Login",
 			command=self.login)
-		
+
+
+class LoginDialog(tk.Toplevel):
+	def __init__(self, master):
+		tk.Toplevel.__init__(self, master)
+		self.master = master
+
+		self.username_label = tk.Label(self, font=Fonts.medium, text="Username")
+		self.password_label = tk.Label(self, font=Fonts.medium, text="Password")
+
+		self.username_entry = tk.Entry(self, font=Fonts.large)
+		self.password_entry = tk.Entry(self, font=Fonts.large, show=u"\u2620")
+
+		self.username_label.grid(row=0, sticky=tk.E)
+		self.password_label.grid(row=1, sticky=tk.E)
+		self.username_entry.grid(row=0, column=1)
+		self.password_entry.grid(row=1, column=1)
+
+		self.login_button = tk.Button(
+			self, text="Login", command=self.login_button_clicked)
+		self.login_button.grid(columnspan=2)
+
+		# self.pack()
+
+
+	def login_button_clicked(self):
+		print("Attempting to log in")
+
+		username = self.username_entry.get()
+		password = self.password_entry.get()
+
+		print(username, password)
+
+
+	def exit(self):
+		self.destroy()
+
 
 
 if __name__ == "__main__":
 	root = tk.Tk()
 	app = MainApp(root)
+	# app = LoginFrame(root)
 	root.mainloop()
