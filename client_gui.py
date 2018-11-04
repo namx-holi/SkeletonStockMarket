@@ -31,9 +31,10 @@ class MainApp:
 		self.auth_token = None
 
 		self.login_logout_btn = tk.Button(
-			self.frame, text="Login",
+			self.frame, text="Login", font=Fonts.large,
 			width=25, command=self.login)
 		self.login_logout_btn.pack()
+		self._login_dialog_open = False
 
 		self.frame.pack()
 
@@ -75,8 +76,15 @@ class MainApp:
 
 
 	def login(self):
-		login_popup = LoginDialog(self.master, self)
-		self.master.wait_window(login_popup)
+		# If already open, bring to front
+		if self._login_dialog_open:
+			self._login_popup.lift()
+			return
+
+		self._login_dialog_open = True
+		self._login_popup = LoginDialog(self.master, self)
+		self.master.wait_window(self._login_popup)
+		self._login_dialog_open = False
 
 
 	def logout(self):
