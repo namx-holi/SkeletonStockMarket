@@ -14,9 +14,12 @@ import tkinter as tk
 from settings import market_settings as market_cfg
 from settings import client_settings as client_cfg
 
+
+
 class Fonts:
 	large = ("Helvetica 20 bold")
 	medium = ("Helvetica 15 bold")
+	small = ("Helvetica 12")
 
 
 
@@ -72,22 +75,8 @@ class MainApp:
 
 
 	def login(self):
-		login_popup = LoginDialog(self.master)
+		login_popup = LoginDialog(self.master, self)
 		self.master.wait_window(login_popup)
-
-		data = dict(command="login", args="bob cool")
-		response = self._send(data)
-
-		if response["error"]:
-			print(response["error_text"])
-			return
-
-		self.auth_token = response["data"]
-		print(response["msg"])
-
-		# Change the login button to a logout button
-		self.login_logout_btn.configure(text="Logout",
-			command=self.logout)
 
 
 	def logout(self):
@@ -106,10 +95,13 @@ class MainApp:
 			command=self.login)
 
 
+
 class LoginDialog(tk.Toplevel):
-	def __init__(self, master):
+
+	def __init__(self, master, main_app):
 		tk.Toplevel.__init__(self, master)
 		self.master = master
+		self.main_app = main_app
 
 		self.username_label = tk.Label(self, font=Fonts.medium, text="Username")
 		self.password_label = tk.Label(self, font=Fonts.medium, text="Password")
@@ -122,11 +114,14 @@ class LoginDialog(tk.Toplevel):
 		self.username_entry.grid(row=0, column=1)
 		self.password_entry.grid(row=1, column=1)
 
-		self.login_button = tk.Button(
-			self, text="Login", command=self.login_button_clicked)
-		self.login_button.grid(columnspan=2)
+		self.error_text = tk.StringVar()
+		self.error_label = tk.Label(self, font=Fonts.small,
+			textvariable=self.error_text)
+		self.error_label.grid(columnspan=2)
 
-		# self.pack()
+		self.login_button = tk.Button(self, text="Login",
+			font=Fonts.medium, command=self.login_button_clicked)
+		self.login_button.grid(columnspan=2)
 
 
 	def login_button_clicked(self):
@@ -135,10 +130,20 @@ class LoginDialog(tk.Toplevel):
 		username = self.username_entry.get()
 		password = self.password_entry.get()
 
-		print(username, password)
+		data = dict(command="login", args="{} {}".format(username, password))
+		response = self.main_app._send(data)
 
+		if response["error"]:
+			print(response["error_text"])
+			self.error_text.set(response["error_text"])
+			return
 
-	def exit(self):
+		self.main_app.auth_token = response["data"]
+		print(response["msg"])
+
+		self.main_app.login_logout_btn.configure(text="Logout",
+			command=self.main_app.logout)
+
 		self.destroy()
 
 
