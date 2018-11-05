@@ -35,7 +35,7 @@ class MainMenu(tk.Frame):
 
 		self.exit_button = tk.Button(
 			self, text="Exit", font=Fonts.large,
-			width=25, command=None)
+			width=25, command=self.exit)
 		self.exit_button.pack()
 
 
@@ -56,3 +56,13 @@ class MainMenu(tk.Frame):
 		# Change the logout button to a login button
 		self.login_button.configure(text="Login",
 			command=self.login)
+
+
+	def exit(self):
+		# Try to logout before exiting
+		resp = self.controller.send_request("logout")
+		print(resp)
+
+		# TODO: Error message confirming exit if logout failed?
+
+		self.controller.destroy()
