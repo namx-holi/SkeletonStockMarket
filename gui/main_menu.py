@@ -23,6 +23,21 @@ class MainMenu(tk.Frame):
 			width=25, command=self.login)
 		self.login_button.pack()
 
+		self.assets_button = tk.Button(
+			self, text="Assets", font=Fonts.large,
+			width=25, command=None)
+		self.assets_button.pack()
+
+		self.trading_button = tk.Button(
+			self, text="Trading", font=Fonts.large,
+			width=25, command=None)
+		self.trading_button.pack()
+
+		self.exit_button = tk.Button(
+			self, text="Exit", font=Fonts.large,
+			width=25, command=None)
+		self.exit_button.pack()
+
 
 	def login(self):
 		self.controller.show_frame("LoginPage", opened_by=self)

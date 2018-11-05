@@ -5,6 +5,8 @@ from gui.fonts import Fonts
 
 
 
+# TODO: Add a Create User button in login frame
+
 class LoginPage(tk.Frame):
 
 	@staticmethod

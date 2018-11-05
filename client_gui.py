@@ -22,6 +22,8 @@ from settings import client_settings as client_cfg
 
 
 
+# TODO: Dynamically resize container every time a frame changes
+
 class App(tk.Tk):
 
 	def __init__(self, *args, **kwargs):
